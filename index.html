@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Mackie's Diary</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FAF8F5;
+    --warm-white: #FFFFFF;
+    --sage: #8FAF8A;
+    --sage-light: #E8F0E7;
+    --sage-dark: #5A7A55;
+    --blush: #E8C4B8;
+    --blush-light: #F9EDE8;
+    --blush-dark: #C4856E;
+    --charcoal: #2C2C2A;
+    --mid: #6B6B68;
+    --light: #A8A8A5;
+    --border: #ECEAE6;
+    --gold: #C9A96E;
+    --gold-light: #F5EDD8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--charcoal);
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .app-header {
+    background: var(--warm-white);
+    padding: 52px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .app-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--charcoal);
+    letter-spacing: -0.3px;
+  }
+  .app-name span { color: var(--sage-dark); }
+  .app-date {
+    font-size: 12px;
+    color: var(--light);
+    margin-top: 2px;
+    font-weight: 300;
+  }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 430px;
+    background: var(--warm-white);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 8px 0 20px;
+    z-index: 100;
+  }
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    color: var(--light);
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .nav-btn.active { color: var(--sage-dark); }
+  .nav-icon { font-size: 20px; }
+
+  /* ── PAGES ── */
+  .page { display: none; padding: 16px 16px 100px; }
+  .page.active { display: block; }
+
+  /* ── DAY SELECTOR ── */
+  .day-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 0 12px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .day-scroll::-webkit-scrollbar { display: none; }
+  .day-pill {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--warm-white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--mid);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .day-pill.active {
+    background: var(--charcoal);
+    color: white;
+    border-color: var(--charcoal);
+  }
+
+  /* ── SECTION HEADERS ── */
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--charcoal);
+    margin: 16px 0 4px;
+  }
+  .section-sub {
+    font-size: 12px;
+    color: var(--light);
+    margin-bottom: 12px;
+    font-weight: 300;
+  }
+  .tag-pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .tag-high { background: #E8F4E0; color: #3B6D11; }
+  .tag-mod  { background: #E0EEF8; color: #1A5F9E; }
+  .tag-low  { background: #F0EFE8; color: #5A5A58; }
+  .tag-run  { background: #FDF0DC; color: #8A5010; }
+  .tag-rest { background: #F0EFE8; color: #5A5A58; }
+
+  /* ── MACRO BAR ── */
+  .macro-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .macro-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .macro-num { font-size: 18px; font-weight: 500; color: var(--charcoal); }
+  .macro-lbl { font-size: 10px; color: var(--light); margin-top: 2px; }
+
+  /* ── MEAL CARDS ── */
+  .meal-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .meal-card.dessert { border-left: 3px solid var(--blush-dark); }
+  .meal-card.preworkout { border-left: 3px solid var(--gold); }
+  .meal-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .meal-type { font-size: 10px; font-weight: 500; color: var(--light); text-transform: uppercase; letter-spacing: 0.05em; }
+  .meal-kcal { font-size: 12px; color: var(--mid); }
+  .meal-name { font-size: 15px; font-weight: 500; color: var(--charcoal); margin-bottom: 5px; }
+  .meal-macros { font-size: 12px; color: var(--light); margin-bottom: 8px; }
+  .ingredient-list { border-top: 1px solid var(--border); padding-top: 8px; }
+  .ingredient { font-size: 13px; color: var(--mid); padding: 3px 0; display: flex; gap: 6px; }
+  .ingredient::before { content: "·"; color: var(--light); }
+
+  /* ── EXERCISE CARDS ── */
+  .exercise-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .ex-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .ex-name { font-size: 15px; font-weight: 500; color: var(--charcoal); flex: 1; padding-right: 8px; line-height: 1.3; }
+  .ex-badge {
+    font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 20px;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .badge-main { background: var(--sage-light); color: var(--sage-dark); }
+  .badge-finish { background: var(--blush-light); color: var(--blush-dark); }
+  .badge-warm { background: #F0EFE8; color: #5A5A58; }
+  .ex-sets-row { font-size: 13px; color: var(--charcoal); font-weight: 500; margin-bottom: 3px; }
+  .ex-rest { font-size: 12px; color: var(--light); margin-bottom: 8px; }
+  .ex-notes { font-size: 12px; color: var(--mid); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 8px; }
+
+  /* ── SET TRACKER ── */
+  .set-tracker { margin: 10px 0 4px; }
+  .set-tracker-label { font-size: 11px; color: var(--light); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .sets-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .set-row { display: flex; align-items: center; gap: 6px; background: var(--cream); border-radius: 10px; padding: 7px 10px; border: 1px solid var(--border); }
+  .set-num { font-size: 11px; color: var(--light); min-width: 28px; }
+  .set-input {
+    width: 62px; font-size: 13px; font-family: 'DM Sans', sans-serif;
+    border: none; background: transparent; color: var(--charcoal);
+    border-bottom: 1px solid var(--border); text-align: center; padding: 1px 0;
+    outline: none;
+  }
+  .set-input::placeholder { color: var(--light); font-size: 11px; }
+  .set-check {
+    width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border);
+    background: white; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0; transition: all 0.2s; font-size: 12px;
+  }
+  .set-check.done { background: var(--sage); border-color: var(--sage); color: white; }
+
+  /* ── PR BOX ── */
+  .pr-box {
+    background: var(--gold-light);
+    border: 1px solid #E8D5B0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .pr-label { font-size: 11px; color: var(--gold); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; min-width: 28px; }
+  .pr-input {
+    flex: 1; font-size: 14px; font-family: 'DM Sans', sans-serif;
+    border: none; background: transparent; color: var(--charcoal);
+    border-bottom: 1px dashed #D4B88A; outline: none; padding: 2px 4px;
+  }
+  .pr-input::placeholder { color: #D4B88A; font-size: 12px; }
+
+  /* ── PROGRESS BOX ── */
+  .progress-box {
+    background: var(--sage-light);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-top: 10px;
+  }
+  .progress-title { font-size: 11px; color: var(--sage-dark); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .progress-text { font-size: 12px; color: #4A6A46; line-height: 1.6; }
+
+  /* ── SUMMARY PAGE ── */
+  .summary-hero {
+    background: var(--charcoal);
+    border-radius: 20px;
+    padding: 24px 20px;
+    margin-bottom: 16px;
+    color: white;
+  }
+  .summary-hero-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+  .summary-hero-sub { font-size: 13px; color: rgba(255,255,255,0.6); }
+  .week-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .week-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .week-card:active { transform: scale(0.97); }
+  .week-card-day { font-size: 11px; color: var(--light); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .week-card-name { font-size: 14px; font-weight: 500; color: var(--charcoal); line-height: 1.3; margin-bottom: 8px; }
+  .week-card-tag { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; display: inline-block; }
+
+  /* ── NOTES PAGE ── */
+  .notes-textarea {
+    width: 100%; min-height: 120px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: var(--charcoal); background: var(--warm-white);
+    border: 1px solid var(--border); border-radius: 14px; padding: 14px;
+    resize: none; outline: none; line-height: 1.7;
+  }
+  .notes-card { background: var(--warm-white); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+  .notes-card-label { font-size: 11px; color: var(--light); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+  .save-btn {
+    width: 100%; padding: 14px; background: var(--charcoal); color: white;
+    border: none; border-radius: 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 8px;
+    transition: opacity 0.2s;
+  }
+  .save-btn:active { opacity: 0.8; }
+
+  .divider { height: 1px; background: var(--border); margin: 16px 0; }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="app-name">Mackie's <span>Diary</span></div>
+  <div class="app-date" id="today-date"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active" onclick="showPage('home')" id="nav-home">
+    <span class="nav-icon">🏠</span>Week
+  </button>
+  <button class="nav-btn" onclick="showPage('meals')" id="nav-meals">
+    <span class="nav-icon">🥗</span>Meals
+  </button>
+  <button class="nav-btn" onclick="showPage('train')" id="nav-train">
+    <span class="nav-icon">💪</span>Train
+  </button>
+  <button class="nav-btn" onclick="showPage('notes')" id="nav-notes">
+    <span class="nav-icon">📓</span>Notes
+  </button>
+</div>
+
+<!-- ══════════ HOME PAGE ══════════ -->
+<div class="page active" id="page-home">
+  <div class="summary-hero">
+    <div class="summary-hero-name">Hey Mackie 👋</div>
+    <div class="summary-hero-sub">7-day recomp plan · 2000–2200 kcal daily</div>
+    <div style="display:flex;gap:16px;margin-top:16px;">
+      <div><div style="font-size:22px;font-weight:500;">140–150g</div><div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px;">Protein</div></div>
+      <div><div style="font-size:22px;font-weight:500;">220–260g</div><div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px;">Carbs</div></div>
+      <div><div style="font-size:22px;font-weight:500;">60–70g</div><div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px;">Fats</div></div>
+    </div>
+  </div>
+
+  <div style="font-size:13px;font-weight:500;color:var(--mid);margin-bottom:10px;">Tap a day to jump straight in</div>
+  <div class="week-grid" id="week-grid"></div>
+</div>
+
+<!-- ══════════ MEALS PAGE ══════════ -->
+<div class="page" id="page-meals">
+  <div class="day-scroll" id="meal-day-scroll"></div>
+  <div id="meal-content"></div>
+</div>
+
+<!-- ══════════ TRAIN PAGE ══════════ -->
+<div class="page" id="page-train">
+  <div class="day-scroll" id="train-day-scroll"></div>
+  <div id="train-content"></div>
+</div>
+
+<!-- ══════════ NOTES PAGE ══════════ -->
+<div class="page" id="page-notes">
+  <div class="section-title" style="margin-top:8px;">My Notes</div>
+  <div class="section-sub">Reflections, how you felt, what to adjust</div>
+
+  <div class="notes-card">
+    <div class="notes-card-label">This week's wins 🏆</div>
+    <textarea class="notes-textarea" id="note-wins" placeholder="What went well this week..."></textarea>
+  </div>
+  <div class="notes-card">
+    <div class="notes-card-label">How I'm feeling 💭</div>
+    <textarea class="notes-textarea" id="note-feeling" placeholder="Energy, sleep, mood, recovery..."></textarea>
+  </div>
+  <div class="notes-card">
+    <div class="notes-card-label">Adjustments to make 🔧</div>
+    <textarea class="notes-textarea" id="note-adjust" placeholder="Meals to tweak, exercises to change..."></textarea>
+  </div>
+  <button class="save-btn" onclick="saveNotes()">Save Notes</button>
+  <div style="font-size:12px;color:var(--light);text-align:center;margin-top:8px;" id="save-confirm"></div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────
+
+const DAYS = [
+  { short: "Mon", name: "Monday", training: "Glutes & Quads", tag: "high", tagLabel: "High Carb · Glutes", kcal: 2120, P: 147, C: 255, F: 65,
+    meals: [
+      { type: "Breakfast", name: "Protein oats + latte", kcal: 500, p: 35, c: 57, f: 9, items: ["40g rolled oats","1 scoop whey protein (30g)","80g mixed berries","½ banana (~50g)","1 tsp honey (7g)","1 latte (~250ml)"] },
+      { type: "Lunch", name: "Chicken chopped salad + 2 boiled eggs", kcal: 420, p: 47, c: 14, f: 17, items: ["150g cooked chicken breast","2 boiled eggs","80g cos lettuce","1 medium tomato (120g)","½ cucumber (80g)","Sauce: 4 tbsp greek yoghurt, ½ tsp garlic powder, lemon, salt & pepper"] },
+      { type: "Pre-workout", name: "Raisin toast + YoPro", kcal: 310, p: 22, c: 48, f: 4, preworkout: true, items: ["2 slices raisin toast (~70g)","1 x YoPro yoghurt (~170g)"] },
+      { type: "Dinner", name: "Hot honey beef cottage bowl", kcal: 620, p: 48, c: 58, f: 18, items: ["140g lean beef mince (5% fat)","230g sweet potato (roasted)","100g cottage cheese","1 tsp hot honey (7g)","60g baby spinach","80g cucumber","Paprika, garlic powder, chili flakes, salt & pepper"] },
+      { type: "Dessert", name: "Wicked Sister protein pudding", kcal: 90, p: 10, c: 8, f: 2, dessert: true, items: ["1 x Wicked Sister protein pudding"] }
+    ],
+    exercises: [
+      { name: "Smith machine glute squat", badge: "Main", sets: "1 warm-up × 15 · 4 × 8–10", rest: "3 min", notes: "Wide stance, toes out. Drive through heels, pause 1 sec at bottom. Think 'sit back' not 'sit down'.", warmSets: 1, workSets: 4 },
+      { name: "Barbell hip thrust", badge: "Main", sets: "1 warm-up × 12 · 4 × 8–10", rest: "3 min", notes: "Bench at mid-scapula. Full hip extension, squeeze 1 sec at top. Chin tucked, avoid hyperextending lower back.", warmSets: 1, workSets: 4 },
+      { name: "Bulgarian split squat — dumbbell (each side)", badge: "Main", sets: "1 warm-up × 8 · 3 × 10–12 each side", rest: "2 min", notes: "Lean slightly forward to bias glutes. Knee tracks over 2nd toe. Front foot far enough from bench.", warmSets: 1, workSets: 3 },
+      { name: "Hip abductor machine", badge: "Main", sets: "3 × 15", rest: "90 sec", notes: "Slow and controlled. 2-sec squeeze at top. Good finisher — glutes already fatigued.", workSets: 3 }
+    ],
+    progressTip: "When you hit the top of your rep range on ALL sets with 1–2 reps still in reserve, add 2.5–5kg. Hip thrusts & squats: +5kg. BSS: +2kg per dumbbell."
+  },
+  { short: "Tue", name: "Tuesday", training: "Upper Pull", tag: "mod", tagLabel: "Moderate Carb · Back & Bis", kcal: 2030, P: 142, C: 228, F: 62,
+    meals: [
+      { type: "Breakfast", name: "Protein oats + latte", kcal: 500, p: 35, c: 57, f: 9, items: ["40g rolled oats","1 scoop whey protein (30g)","80g mixed berries","½ banana (~50g)","1 tsp honey (7g)","1 latte (~250ml)"] },
+      { type: "Lunch", name: "Leftover beef wrap", kcal: 500, p: 38, c: 48, f: 16, items: ["120g cooked lean beef mince (taco seasoned)","1 high-protein wrap (~60g)","40g cos lettuce","1 medium tomato (100g)","1 tbsp greek yoghurt sauce (20g)","Squeeze of lime"] },
+      { type: "Snack", name: "YoPro + rice cakes with honey", kcal: 230, p: 18, c: 34, f: 3, items: ["1 x YoPro yoghurt (~170g)","3 rice cakes (~20g)","1 tsp honey drizzle (7g)"] },
+      { type: "Dinner", name: "Chicken pizza", kcal: 560, p: 48, c: 28, f: 24, items: ["160g chicken mince base","25g reduced-fat cheese","2 tbsp tomato paste (40g)","30g pepperoni slices","½ capsicum (80g)","60g mushrooms","½ small onion (50g)","Oregano, garlic powder, chili flakes"] },
+      { type: "Dessert", name: "Cottage cheese chocolate bowl", kcal: 220, p: 18, c: 23, f: 7, dessert: true, items: ["200g low-fat cottage cheese","1 tsp cocoa powder (5g)","10g dark choc chips","1 tsp honey (optional)"] }
+    ],
+    exercises: [
+      { name: "Pull-ups (assisted if needed)", badge: "Main", sets: "3 × 6–8 (or to failure)", rest: "2 min", notes: "Full dead hang to chin over bar. Depress scapula before pulling. Use band until 3 × 6 unassisted.", workSets: 3 },
+      { name: "Lat pulldown (wide, overhand)", badge: "Main", sets: "3 × 10–12", rest: "90 sec", notes: "Pull to upper chest. Drive elbows down and back. 2–3 sec eccentric on the way up.", workSets: 3 },
+      { name: "Single-arm dumbbell row (each side)", badge: "Main", sets: "3 × 12 each side", rest: "90 sec", notes: "Neutral spine. Drive elbow past hip. Full stretch at bottom, full retraction at top.", workSets: 3 },
+      { name: "Barbell bent-over row", badge: "Main", sets: "3 × 10–12", rest: "90 sec", notes: "Hinge to ~45°. Bar close to body, pull to lower ribcage. Controlled eccentric.", workSets: 3 },
+      { name: "Rear delt fly (cable or dumbbell)", badge: "Main", sets: "3 × 12–15 (light, slow)", rest: "60 sec", notes: "Lead with elbows. Pause at top. Ego has no place here — go lighter than you think.", workSets: 3 },
+      { name: "Alternating hammer curl", badge: "Main", sets: "3 × 12 each arm", rest: "60 sec", notes: "Neutral grip. Full extension at bottom. No swinging. Works both bicep heads + brachialis.", workSets: 3 },
+      { name: "Incline walk finisher", badge: "Finisher", sets: "20 min", rest: "—", notes: "Incline 10–12%, speed 5–6 km/h. Don't hold the rails.", workSets: 0, isFinisher: true }
+    ],
+    progressTip: "Rows + pulldowns: add 2.5–5kg when all sets hit top of range. Curls & flies: add 1–2kg. Pull-ups: reduce band assistance or add reps before adding weight."
+  },
+  { short: "Wed", name: "Wednesday", training: "Glutes & Hamstrings", tag: "high", tagLabel: "High Carb · Posterior Chain", kcal: 2150, P: 148, C: 258, F: 63,
+    meals: [
+      { type: "Breakfast", name: "Protein oats + latte", kcal: 500, p: 35, c: 57, f: 9, items: ["40g rolled oats","1 scoop whey protein (30g)","80g mixed berries","½ banana (~50g)","1 tsp honey (7g)","1 latte (~250ml)"] },
+      { type: "Lunch", name: "Chicken rice bowl", kcal: 560, p: 47, c: 65, f: 10, items: ["160g cooked chicken breast","170g cooked jasmine rice (70g dry)","80g broccolini or zucchini (steamed)","80g cherry tomatoes","1 tsp olive oil + soy sauce","Salt, pepper, garlic powder"] },
+      { type: "Pre-workout", name: "Raisin toast with butter", kcal: 240, p: 5, c: 44, f: 6, preworkout: true, items: ["2 slices raisin toast (~70g)","½ tsp butter (4g)"] },
+      { type: "Dinner", name: "Steak bowl with mushroom sauce", kcal: 640, p: 53, c: 55, f: 21, items: ["160g sirloin steak (grilled)","210g baby potatoes (halved, roasted)","80g baby spinach","80g cherry tomatoes","½ small cucumber (60g)","½ red onion (50g)","Mushroom sauce: 100g mushrooms, 3 tbsp greek yoghurt (60g), garlic, salt & pepper"] },
+      { type: "Dessert", name: "Protein mug cake", kcal: 220, p: 20, c: 24, f: 5, dessert: true, items: ["1 scoop whey protein (30g)","2 tbsp self-raising flour (20g)","1 egg","2 tbsp milk (30ml)","1 tsp cocoa powder","1 tsp honey","Mix & microwave 60–90 sec"] }
+    ],
+    exercises: [
+      { name: "Romanian deadlift (barbell or dumbbell)", badge: "Main", sets: "4 × 8–10", rest: "3 min", notes: "Hip hinge — push hips back, bar close to legs, soft knee bend. Feel hamstring stretch at bottom. No rounding lower back.", workSets: 4 },
+      { name: "Smith machine slow lunge (each side)", badge: "Main", sets: "4 × 8–10 each side", rest: "2 min", notes: "3-sec descent. Knee just above floor. Slight forward torso lean to bias glutes.", workSets: 4 },
+      { name: "Glute extension machine (with plate)", badge: "Main", sets: "3 × 10–12", rest: "90 sec", notes: "Squeeze glute hard at full extension. Don't use lower back to finish. Control the eccentric.", workSets: 3 },
+      { name: "Lying or seated hamstring curl", badge: "Main", sets: "3 × 10–12", rest: "90 sec", notes: "3-sec eccentric. Curl all the way, hips stay on pad. Plantarflex (point toes) for more activation.", workSets: 3 },
+      { name: "Standing calf raise", badge: "Main", sets: "3 × failure (~15–25)", rest: "60 sec", notes: "Full ROM — stretch down, squeeze up. Change foot angle each set. Slow and deliberate.", workSets: 3 },
+      { name: "Cable crunch (kneeling)", badge: "Finisher", sets: "2 × failure (~15–20)", rest: "60 sec", notes: "Hold rope at temples. Round spine — pull ribs to pelvis. Keep cable tension throughout.", workSets: 2, isFinisher: true }
+    ],
+    progressTip: "RDLs: add 5kg when all 4 sets feel controlled at 10 reps. Lunges: add 5kg total when form is solid. Isolation work: add 5kg when hitting top of rep range across all sets."
+  },
+  { short: "Thu", name: "Thursday", training: "Upper Push", tag: "mod", tagLabel: "Moderate Carb · Chest, Shoulders & Tris", kcal: 2050, P: 143, C: 232, F: 63,
+    meals: [
+      { type: "Breakfast", name: "Protein oats + latte", kcal: 500, p: 35, c: 57, f: 9, items: ["40g rolled oats","1 scoop whey protein (30g)","80g mixed berries","½ banana (~50g)","1 tsp honey (7g)","1 latte (~250ml)"] },
+      { type: "Lunch", name: "Japanese tuna rice bowl", kcal: 550, p: 45, c: 60, f: 14, items: ["185g tin tuna in springwater (drained)","150g cooked sushi rice (60g dry)","80g cucumber (sliced)","40g shredded carrot","¼ small avocado (~40g)","Sauce: 1 tbsp soy, 2 tbsp greek yoghurt (40g), lemon, 1 tsp sesame seeds"] },
+      { type: "Dinner", name: "Teriyaki chicken + potato", kcal: 640, p: 52, c: 60, f: 20, items: ["170g chicken thigh fillet (skinless)","220g baby potatoes (roasted, halved)","80g broccolini (steamed)","Teriyaki: 1 tbsp soy, 1 tsp honey, splash water, ginger, garlic","Yoghurt sauce: 3 tbsp greek yoghurt, lemon, salt & pepper"] },
+      { type: "Snack", name: "YoPro + fruit", kcal: 180, p: 16, c: 24, f: 2, items: ["1 x YoPro yoghurt (~170g)","100g strawberries"] }
+    ],
+    exercises: [
+      { name: "Overhead press (dumbbell / landmine / barbell)", badge: "Main", sets: "4 × 6–8 (heavy)", rest: "2 min", notes: "Full lockout at top, lower to shoulder height. Pick one variation and stick with it 4–6 weeks. RPE 8–9.", workSets: 4 },
+      { name: "Incline dumbbell chest press", badge: "Main", sets: "4 × 8–12", rest: "90 sec", notes: "30–45° incline. Full stretch at bottom, don't bounce. 2–3 sec eccentric. Elbows ~45° from torso.", workSets: 4 },
+      { name: "Lateral raises (cable or dumbbell)", badge: "Main", sets: "4 × 12–15 (3 sec up, 2 sec down)", rest: "60 sec", notes: "Lead with elbows. Slight forward lean. Stop at shoulder height. This slow tempo builds that 3D shoulder look.", workSets: 4 },
+      { name: "Face pull (cable rope)", badge: "Main", sets: "3 × 10–12", rest: "60 sec", notes: "Cable at face height. Pull to face, separate hands as you pull (external rotation). Non-negotiable for shoulder health.", workSets: 3 },
+      { name: "Barbell / dumbbell shrug", badge: "Main", sets: "3 × 10–12", rest: "60 sec", notes: "Straight up — don't roll shoulders. Hold 1 sec at top. Builds upper trap and that athletic shoulder-to-neck line.", workSets: 3 },
+      { name: "Tricep overhead extension (cable / EZ bar)", badge: "Main", sets: "3 × 10–12", rest: "60 sec", notes: "Full stretch at bottom. Elbows tight, don't flare. Long head is best targeted overhead — arms look longer and leaner.", workSets: 3 },
+      { name: "Incline walk finisher", badge: "Finisher", sets: "20 min", rest: "—", notes: "Incline 10–12%, speed 5–6 km/h. Low intensity fat burning. Don't hold the rails.", workSets: 0, isFinisher: true }
+    ],
+    progressTip: "Overhead press: add 2.5kg at 8 reps all 4 sets. Chest press: +2kg per dumbbell at top of range. Laterals: only add 1–2kg when form is perfect at the slow tempo."
+  },
+  { short: "Fri", name: "Friday", training: "Glutes & Quads", tag: "high", tagLabel: "High Carb · Quad Dominant", kcal: 2180, P: 149, C: 260, F: 66,
+    meals: [
+      { type: "Breakfast", name: "Protein oats + latte", kcal: 500, p: 35, c: 57, f: 9, items: ["40g rolled oats","1 scoop whey protein (30g)","80g mixed berries","½ banana (~50g)","1 tsp honey (7g)","1 latte (~250ml)"] },
+      { type: "Lunch", name: "Beef burrito bowl", kcal: 650, p: 48, c: 70, f: 20, items: ["140g lean beef mince (cumin, paprika, garlic)","160g cooked rice (65g dry)","80g black beans (canned, drained)","80g salsa","30g greek yoghurt (sour cream sub)","Lettuce, coriander, lime"] },
+      { type: "Pre-workout", name: "Rice cakes with honey", kcal: 140, p: 2, c: 30, f: 1, preworkout: true, items: ["3 rice cakes (~20g)","2 tsp honey (14g)"] },
+      { type: "Dinner", name: "Chicken pizza", kcal: 560, p: 48, c: 28, f: 24, items: ["160g chicken mince base","25g reduced-fat cheese","2 tbsp tomato paste (40g)","30g pepperoni slices","½ capsicum (80g)","60g mushrooms","½ small onion (50g)","Oregano, garlic powder, chili flakes"] },
+      { type: "Dessert", name: "YoPro frozen bark", kcal: 150, p: 13, c: 17, f: 3, dessert: true, items: ["1 x YoPro dark choc flavour (~170g)","80g sliced strawberries","Spread on baking paper, top with berries, freeze 2–3 hrs, break into pieces"] }
+    ],
+    exercises: [
+      { name: "Barbell hip thrust", badge: "Main", sets: "1 warm-up × 12 · 4 × 8–10", rest: "3 min", notes: "Second hip thrust session this week — intentional for glute hypertrophy. Aim to beat Monday's weight or reps.", warmSets: 1, workSets: 4 },
+      { name: "Leg press (feet high & wide)", badge: "Main", sets: "4 × 10–12", rest: "2 min", notes: "High feet = more glutes and hamstrings. Don't lock knees at top. Full depth without lower back peeling off.", workSets: 4 },
+      { name: "Dumbbell step-up — high box (each leg)", badge: "Main", sets: "3 × 10–12 each leg", rest: "90 sec", notes: "Box puts knee at ~90°. Drive through heel of stepping foot. Don't push off the bottom foot.", workSets: 3 },
+      { name: "Leg extension machine", badge: "Main", sets: "3 × 12–15 (squeeze at top)", rest: "90 sec", notes: "Full extension, 2-sec hold at top. Controlled descent — don't let weight free-fall.", workSets: 3 },
+      { name: "Hip abductor machine", badge: "Main", sets: "3 × 15", rest: "90 sec", notes: "Same as Monday. 2× per week for glute med development and that hip-to-waist ratio.", workSets: 3 }
+    ],
+    progressTip: "Hip thrusts: try to beat Monday's number by at least 1 rep or 2.5kg. Leg press: add 5–10kg when all 4 sets feel controlled. Step-ups: +2kg per dumbbell. Leg extension: +5kg at top of range."
+  },
+  { short: "Sat", name: "Saturday", training: "Run / Hyrox", tag: "run", tagLabel: "Cardio · Hyrox Training", kcal: 2060, P: 140, C: 238, F: 62,
+    meals: [
+      { type: "Breakfast", name: "Protein oats + latte", kcal: 500, p: 35, c: 57, f: 9, items: ["40g rolled oats","1 scoop whey protein (30g)","80g mixed berries","½ banana (~50g)","1 tsp honey (7g)","1 latte (~250ml)"] },
+      { type: "Lunch", name: "Leftover beef bowl", kcal: 540, p: 42, c: 55, f: 16, items: ["140g cooked lean beef (leftover)","160g cooked rice (65g dry)","80g steamed broccoli or zucchini","80g cherry tomatoes","1 tsp soy sauce + splash sesame oil (4g)"] },
+      { type: "Dinner", name: "Sushi bowl", kcal: 600, p: 44, c: 68, f: 18, items: ["160g sashimi-grade salmon (sliced)","170g cooked sushi rice (70g dry)","80g cucumber","40g shredded carrot","½ small avocado (~50g)","1 tbsp soy sauce","1 tsp sesame seeds (5g) + 1 tsp sesame oil (5g)","Optional: nori, pickled ginger, sriracha"] },
+      { type: "Snack", name: "Cottage cheese bowl", kcal: 200, p: 18, c: 18, f: 6, dessert: true, items: ["150g cottage cheese","½ banana (sliced, ~50g)","½ tsp cinnamon","1 tsp honey (7g)"] }
+    ],
+    exercises: [
+      { name: "Option A — Interval run (Hyrox-style)", badge: "Main", sets: "5–8 rounds: 400m @ 80% · 90 sec walk", rest: "90 sec walk", notes: "Total ~25–35 min. Mimics Hyrox run segments. Hard but not all-out sprinting.", workSets: 0 },
+      { name: "Option B — Steady state run (zone 2)", badge: "Main", sets: "30 min at conversational pace", rest: "—", notes: "If legs are sore from Friday, go easy. Zone 2 = can talk but wouldn't want to sing.", workSets: 0 },
+      { name: "Hyrox finisher (optional)", badge: "Finisher", sets: "3 rounds: 20 ski erg cals + 20 sled push steps + 20 wall balls", rest: "2 min between rounds", notes: "Only if gym has the equipment. Skip if legs are too fatigued — recovery matters more.", workSets: 0, isFinisher: true }
+    ],
+    progressTip: "Intervals: add 1 round every 2 weeks, or reduce rest from 90 to 75 sec. Steady state: increase by 5 min every 2 weeks. Track average pace monthly."
+  },
+  { short: "Sun", name: "Sunday", training: "Rest & Recovery", tag: "rest", tagLabel: "Lower Carb · Rest Day", kcal: 2000, P: 142, C: 220, F: 67,
+    meals: [
+      { type: "Breakfast", name: "Protein oats + latte", kcal: 500, p: 35, c: 57, f: 9, items: ["40g rolled oats","1 scoop whey protein (30g)","80g mixed berries","½ banana (~50g)","1 tsp honey (7g)","1 latte (~250ml)"] },
+      { type: "Lunch", name: "Beef chopped salad + boiled eggs", kcal: 440, p: 45, c: 14, f: 21, items: ["130g lean beef mince (5% fat, cooked)","2 boiled eggs","80g cos lettuce","1 medium tomato (120g)","80g cucumber","40g pickle slices","½ small red onion (50g)","Dressing: 3 tbsp greek yoghurt (60g), 1 tsp wholegrain mustard, lemon, salt & pepper"] },
+      { type: "Dinner", name: "Savoury cottage cheese bowl", kcal: 520, p: 45, c: 38, f: 20, items: ["200g cottage cheese (full fat)","2 boiled eggs","80g cherry tomatoes (halved)","½ avocado (~80g)","40g cos lettuce","1 tsp olive oil, lemon, za'atar or everything bagel seasoning","2 crispbreads (~20g) for crunch"] },
+      { type: "Snack", name: "Protein mug cake", kcal: 220, p: 20, c: 22, f: 6, dessert: true, items: ["1 scoop whey protein (30g)","2 tbsp self-raising flour (20g)","1 egg","2 tbsp milk (30ml)","1 tsp cocoa powder","1 tsp honey","Mix & microwave 60–90 sec"] },
+      { type: "Snack 2", name: "Greek yoghurt + berries", kcal: 150, p: 14, c: 15, f: 4, items: ["150g greek yoghurt (full fat)","80g mixed berries","Optional: drizzle honey"] }
+    ],
+    exercises: [
+      { name: "Easy walk (optional)", badge: "Recovery", sets: "20–30 min", rest: "—", notes: "Light movement aids recovery and reduces DOMS. Keep it genuinely easy — not training.", workSets: 0 },
+      { name: "Mobility & stretching", badge: "Recovery", sets: "10–15 min", rest: "—", notes: "Hip flexors, glutes (pigeon pose), hamstrings, chest, thoracic spine. Foam roll if available.", workSets: 0 },
+      { name: "Sleep & nutrition focus", badge: "Recovery", sets: "—", rest: "—", notes: "Muscle is built on rest days. Aim for 7–9 hrs sleep. Hit your protein target. This is when your body remodels.", workSets: 0 }
+    ],
+    progressTip: "Track how you feel each Sunday — energy, soreness, sleep quality. If consistently fatigued by Saturday, consider reducing Friday volume slightly or adding an extra rest day."
+  }
+];
+
+// ── STATE ─────────────────────────────────────────────
+let mealDay = 0, trainDay = 0;
+const sets = {}; // { "dayEx_setIdx": {kg, reps, done} }
+const prs = {};  // { "dayEx": pr }
+const notes = {};
+
+// ── INIT ──────────────────────────────────────────────
+document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+// Build home grid
+const wg = document.getElementById('week-grid');
+DAYS.forEach((d, i) => {
+  const tagClass = d.tag === 'high' ? 'tag-high' : d.tag === 'mod' ? 'tag-mod' : d.tag === 'run' ? 'tag-run' : 'tag-rest';
+  wg.innerHTML += `<div class="week-card" onclick="jumpTo(${i})">
+    <div class="week-card-day">${d.short}</div>
+    <div class="week-card-name">${d.training}</div>
+    <span class="week-card-tag ${tagClass}">${d.tagLabel}</span>
+  </div>`;
+});
+
+// Build day pills
+function buildPills(containerId, selected, onclick) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = DAYS.map((d, i) =>
+    `<button class="day-pill${i === selected ? ' active' : ''}" onclick="${onclick}(${i})">${d.short}</button>`
+  ).join('');
+}
+
+buildPills('meal-day-scroll', 0, 'setMealDay');
+buildPills('train-day-scroll', 0, 'setTrainDay');
+
+renderMeals(0);
+renderTrain(0);
+loadNotes();
+
+// ── NAVIGATION ────────────────────────────────────────
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  document.getElementById('nav-' + p).classList.add('active');
+}
+
+function jumpTo(i) {
+  setMealDay(i);
+  setTrainDay(i);
+  showPage('meals');
+}
+
+// ── MEALS ─────────────────────────────────────────────
+function setMealDay(i) {
+  mealDay = i;
+  buildPills('meal-day-scroll', i, 'setMealDay');
+  renderMeals(i);
+}
+
+function renderMeals(i) {
+  const d = DAYS[i];
+  const tagClass = d.tag === 'high' ? 'tag-high' : d.tag === 'mod' ? 'tag-mod' : d.tag === 'run' ? 'tag-run' : 'tag-rest';
+  let html = `
+    <div class="section-title">${d.name}</div>
+    <div class="section-sub">${d.training}</div>
+    <span class="tag-pill ${tagClass}">${d.tagLabel}</span>
+    <div class="macro-row">
+      <div class="macro-card"><div class="macro-num">${d.kcal}</div><div class="macro-lbl">kcal</div></div>
+      <div class="macro-card"><div class="macro-num">${d.P}g</div><div class="macro-lbl">Protein</div></div>
+      <div class="macro-card"><div class="macro-num">${d.C}g</div><div class="macro-lbl">Carbs</div></div>
+      <div class="macro-card"><div class="macro-num">${d.F}g</div><div class="macro-lbl">Fats</div></div>
+    </div>`;
+  d.meals.forEach(m => {
+    html += `<div class="meal-card${m.dessert ? ' dessert' : m.preworkout ? ' preworkout' : ''}">
+      <div class="meal-top">
+        <div class="meal-type">${m.type}</div>
+        <div class="meal-kcal">${m.kcal} kcal</div>
+      </div>
+      <div class="meal-name">${m.name}</div>
+      <div class="meal-macros">${m.p}g P · ${m.c}g C · ${m.f}g F</div>
+      <div class="ingredient-list">${m.items.map(it => `<div class="ingredient">${it}</div>`).join('')}</div>
+    </div>`;
+  });
+  document.getElementById('meal-content').innerHTML = html;
+}
+
+// ── TRAINING ──────────────────────────────────────────
+function setTrainDay(i) {
+  trainDay = i;
+  buildPills('train-day-scroll', i, 'setTrainDay');
+  renderTrain(i);
+}
+
+function renderTrain(i) {
+  const d = DAYS[i];
+  const tagClass = d.tag === 'high' ? 'tag-high' : d.tag === 'mod' ? 'tag-mod' : d.tag === 'run' ? 'tag-run' : 'tag-rest';
+  let html = `
+    <div class="section-title">${d.name}</div>
+    <div class="section-sub">${d.training}</div>
+    <span class="tag-pill ${tagClass}">${d.tagLabel}</span>`;
+
+  d.exercises.forEach((ex, ei) => {
+    const badgeClass = ex.badge === 'Main' ? 'badge-main' : ex.badge === 'Finisher' ? 'badge-finish' : 'badge-warm';
+    const key = `${i}_${ei}`;
+    const numSets = ex.workSets || 0;
+
+    // PR input
+    const prVal = prs[key] || '';
+    let prHtml = numSets > 0 ? `<div class="pr-box">
+      <div class="pr-label">PR</div>
+      <input class="pr-input" type="text" inputmode="decimal" placeholder="e.g. 60kg × 8" value="${prVal}" onchange="savePR('${key}', this.value)" />
+    </div>` : '';
+
+    // Set tracker
+    let setHtml = '';
+    if (numSets > 0) {
+      setHtml = `<div class="set-tracker">
+        <div class="set-tracker-label">Log your sets</div>`;
+      for (let s = 0; s < numSets; s++) {
+        const sk = `${key}_${s}`;
+        const sv = sets[sk] || {};
+        setHtml += `<div class="set-row" id="row-${sk}">
+          <span class="set-num">Set ${s + 1}</span>
+          <input class="set-input" type="text" inputmode="decimal" placeholder="kg" value="${sv.kg || ''}" onchange="saveSet('${sk}','kg',this.value)" />
+          <input class="set-input" type="text" inputmode="numeric" placeholder="reps" value="${sv.reps || ''}" onchange="saveSet('${sk}','reps',this.value)" />
+          <div class="set-check${sv.done ? ' done' : ''}" id="chk-${sk}" onclick="toggleSet('${sk}')">
+            ${sv.done ? '✓' : ''}
+          </div>
+        </div>`;
+      }
+      setHtml += '</div>';
+    }
+
+    html += `<div class="exercise-card">
+      <div class="ex-header">
+        <div class="ex-name">${ex.name}</div>
+        <span class="ex-badge ${badgeClass}">${ex.badge}</span>
+      </div>
+      <div class="ex-sets-row">${ex.sets}</div>
+      <div class="ex-rest">Rest: ${ex.rest}</div>
+      <div class="ex-notes">${ex.notes}</div>
+      ${setHtml}
+      ${prHtml}
+    </div>`;
+  });
+
+  html += `<div class="progress-box">
+    <div class="progress-title">When to increase weight</div>
+    <div class="progress-text">${d.progressTip}</div>
+  </div>`;
+
+  document.getElementById('train-content').innerHTML = html;
+}
+
+function saveSet(sk, field, val) {
+  if (!sets[sk]) sets[sk] = {};
+  sets[sk][field] = val;
+}
+
+function toggleSet(sk) {
+  if (!sets[sk]) sets[sk] = {};
+  sets[sk].done = !sets[sk].done;
+  const chk = document.getElementById('chk-' + sk);
+  if (sets[sk].done) { chk.classList.add('done'); chk.textContent = '✓'; }
+  else { chk.classList.remove('done'); chk.textContent = ''; }
+}
+
+function savePR(key, val) {
+  prs[key] = val;
+}
+
+// ── NOTES ─────────────────────────────────────────────
+function saveNotes() {
+  notes.wins = document.getElementById('note-wins').value;
+  notes.feeling = document.getElementById('note-feeling').value;
+  notes.adjust = document.getElementById('note-adjust').value;
+  document.getElementById('save-confirm').textContent = '✓ Saved!';
+  setTimeout(() => document.getElementById('save-confirm').textContent = '', 2000);
+}
+
+function loadNotes() {
+  if (notes.wins) document.getElementById('note-wins').value = notes.wins;
+  if (notes.feeling) document.getElementById('note-feeling').value = notes.feeling;
+  if (notes.adjust) document.getElementById('note-adjust').value = notes.adjust;
+}
+</script>
+</body>
+</html>
